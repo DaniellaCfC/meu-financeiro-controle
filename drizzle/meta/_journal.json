@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1789125686318,
+      "tag": "0000_mature_lizard",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1789126561217,
+      "tag": "0001_sparkling_sheva_callister",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1789127449029,
+      "tag": "0002_secret_nextwave",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1789128341946,
+      "tag": "0003_sticky_greymalkin",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1789128343836,
+      "tag": "0004_entry_history_triggers",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1789133619659,
+      "tag": "0005_flowery_omega_flight",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1789134569853,
+      "tag": "0006_steep_mimic",
+      "breakpoints": true
+    }
+  ]
+}

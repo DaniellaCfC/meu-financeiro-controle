@@ -1,0 +1,21 @@
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const date=s=>s?s.split('-').reverse().join('/'):'Pendente';
+export function createBillingUI(ctx){let state=null,members=[],selected=null;const form=$('#billing-form'),f=form.elements;
+ function render(){if(!state)return;$('#billing-status').textContent=state.admin?'Administradora · acesso preservado':state.active?'Acesso liberado até '+date(state.member.validUntil):state.member?.validUntil?'Período encerrado em '+date(state.member.validUntil)+'. Seus dados continuam disponíveis para consulta.':'Aguardando solicitação e conferência do pagamento.';$('#billing-identity').textContent=state.email;$('#billing-join').hidden=state.admin||!!state.member;$('#billing-admin').hidden=!state.admin;
+ const link=$('#billing-checkout');link.hidden=!state.checkoutUrl||state.admin||!state.member;if(state.checkoutUrl)link.href=state.checkoutUrl;else link.removeAttribute('href');$('#billing-checkout-note').textContent=state.checkoutUrl?'Cobrança recorrente processada no Mercado Pago. Confira R$ 9,90/mês antes de confirmar.':'A cobrança ainda não foi configurada. Nenhum pagamento está disponível aqui.';
+ $('#billing-support').textContent=state.supportEmail?'Suporte: '+state.supportEmail:'Contato de suporte ainda não configurado.';
+ if(state.admin){f.checkoutUrl.value=state.checkoutUrl;f.supportEmail.value=state.supportEmail;}
+ }
+ async function refresh(){state=await ctx.api('/api/billing');render();return state;}
+ async function list(){const result=await ctx.api('/api/admin/members');members=result.members;$('#billing-members').innerHTML=members.length?members.map(m=>`<article class="billing-member"><strong>${esc(m.name)}</strong><p>${esc(m.email)}<br>Acesso até: ${date(m.validUntil)}</p><button type="button" data-member="${esc(m.userId)}">Registrar período pago</button></article>`).join('')+(result.hasMore?'<p>Exibindo os primeiros 100 clientes.</p>':''):'Nenhum cliente solicitou acesso ainda.';}
+ async function work(fn){if(form.dataset.busy)return;form.dataset.busy='1';const buttons=[...form.querySelectorAll('button')];buttons.forEach(b=>b.disabled=true);$('#billing-error').textContent='';try{await fn();}catch(e){$('#billing-error').textContent=e.message;}finally{delete form.dataset.busy;buttons.forEach(b=>b.disabled=false);}}
+ async function open(){if(!$('#billing-dialog').open)$('#billing-dialog').showModal();await work(async()=>{await refresh();if(state.admin)await list();});}
+ $('#billing-open').onclick=open;$('#billing-refresh').onclick=()=>work(async()=>{await refresh();if(state.admin)await list();});
+ $('#billing-register').onclick=()=>work(async()=>{await ctx.api('/api/billing/join',{name:f.customerName.value.trim()});await refresh();ctx.notify('Solicitação registrada. A liberação depende da conferência do pagamento.');});
+ $('#billing-save-settings').onclick=()=>work(async()=>{await ctx.api('/api/admin/settings',{checkoutUrl:f.checkoutUrl.value.trim(),supportEmail:f.supportEmail.value.trim()});await refresh();ctx.notify('Configuração salva. Confira o valor do plano no Mercado Pago.');});
+ form.onsubmit=e=>e.preventDefault();
+ $('#billing-members').onclick=e=>{const b=e.target.closest('[data-member]');if(!b)return;selected=members.find(m=>m.userId===b.dataset.member);const access=$('#access-form');access.reset();$('#access-customer').textContent=selected.name+' · '+selected.email;$('#access-error').textContent='';$('#access-dialog').showModal();};
+ $('#access-form').onsubmit=async e=>{e.preventDefault();const access=e.target;if(access.dataset.busy)return;access.dataset.busy='1';const buttons=[...access.querySelectorAll('button')];buttons.forEach(b=>b.disabled=true);try{await ctx.api('/api/admin/access',{userId:selected.userId,revision:selected.revision,validUntil:access.elements.validUntil.value,paymentRef:access.elements.paymentRef.value.trim(),reason:access.elements.reason.value.trim()});$('#access-dialog').close();await list();ctx.notify('Período de acesso registrado.');}catch(e){$('#access-error').textContent=e.message;}finally{delete access.dataset.busy;buttons.forEach(b=>b.disabled=false);}};
+ $('#billing-dialog').addEventListener('close',()=>{if(state?.active)ctx.reload();});
+ return {refresh,open};
+}

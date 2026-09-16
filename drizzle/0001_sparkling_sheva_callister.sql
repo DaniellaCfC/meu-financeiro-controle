@@ -1,0 +1,1 @@
+ALTER TABLE `companies` ADD `profile_type` text DEFAULT 'pj' NOT NULL;

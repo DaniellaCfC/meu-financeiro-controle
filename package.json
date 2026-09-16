@@ -1,0 +1,21 @@
+{
+  "name": "meu-financeiro",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test finance.test.mjs api.test.mjs pwa.test.mjs reports.test.mjs investments.test.mjs billing.test.mjs",
+    "db:generate": "drizzle-kit generate",
+    "dev": "node dev.mjs"
+  },
+  "devDependencies": {
+    "drizzle-kit": "0.31.4",
+    "drizzle-orm": "0.44.5"
+  },
+  "description": "Controle financeiro pessoal e empresarial com contas, relatórios e acompanhamento de investimentos.",
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}
